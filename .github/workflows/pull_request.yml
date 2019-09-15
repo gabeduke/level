@@ -1,0 +1,29 @@
+on: pull_request
+name: Test
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: test
+      uses: ./.github/actions/golang
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: test
+    - name: codecov
+      uses: pleo-io/actions/codecov@master
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    - name: lint
+      uses: ./.github/actions/golang
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: lint
+    - name: fmt
+      uses: ./.github/actions/golang
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: fmt
