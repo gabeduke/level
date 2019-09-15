@@ -1,17 +1,26 @@
-#!/bin/sh -l
+#!/bin/bash
 
 TAG=$(cat /github/workspace/.release)
-printf -v DATA '{"ref": "refs/tags/%s","sha": "%s"}' "$TAG" "$GITHUB_SHA"
+
+cat <<- EOF > $HOME/.netrc
+        machine github.com
+        login $GITHUB_ACTOR
+        password $GITHUB_TOKEN
+        machine api.github.com
+        login $GITHUB_ACTOR
+        password $GITHUB_TOKEN
+EOF
+
+chmod 600 $HOME/.netrc
+
+git config --global user.name 'autobot'
+git config --global user.email 'autobot@leetserve.com'
 
 if [ -z "$TAG" ]
 then
     echo "Release not found.."
 else
     echo "Tag: $TAG"
-    echo "DATA: ${DATA}"
-
-    # POST a new ref to repo via Github API
-    curl -s -X POST https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
-    -H "Authorization: token $GITHUB_TOKEN" \
-    -d "${DATA}"
+    git tag $TAG
+    git push --tags
 fi

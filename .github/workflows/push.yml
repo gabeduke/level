@@ -1,21 +1,19 @@
-on: push
 name: Tag
+on:
+  push:
+    branches:
+      - master
 jobs:
-  is-master:
+  tag-master:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: is-master
-      uses: actions/bin/filter@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: branch master
+    - uses: actions/checkout@v1
     - name: tag
       uses: ./.github/actions/git-tags
       env:
         VERSION: "${GITHUB_WORKSPACE}/.release"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # must be a user token in order to trigger the release flow
+        GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
     - name: generate-tagged-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
       env:
