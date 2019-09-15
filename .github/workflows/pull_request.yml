@@ -1,10 +1,11 @@
-on: pull_request
+on:
+  pull_request:
+    branches: master
 name: Test
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
     - name: test
       uses: ./.github/actions/golang
       env:

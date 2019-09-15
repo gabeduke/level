@@ -1,16 +1,12 @@
-on: push
 name: Tag
+on:
+  push:
+    branches:
+      - master
 jobs:
-  is-master:
+  tag-master:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: is-master
-      uses: actions/bin/filter@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: branch master
     - name: tag
       uses: ./.github/actions/git-tags
       env:

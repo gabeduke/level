@@ -1,14 +1,11 @@
-on: create
+on:
+  create:
+    tags: "*"
 name: Release
 jobs:
   created-filter:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: created-filter
-      uses: actions/bin/filter@master
-      with:
-        args: tag
     - name: generate-release-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
       env:
