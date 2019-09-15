@@ -12,8 +12,10 @@ jobs:
       with:
         args: branch master
     - name: tag
-      uses: ./.github/actions/git-tags
+      # uses: ./.github/actions/git-tags
+      uses: "frankjuniorr/github-create-release-action@master"
       env:
+        VERSION: "${GITHUB_WORKSPACE}/.release"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: generate-tagged-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
