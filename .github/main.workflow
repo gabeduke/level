@@ -4,7 +4,7 @@
 
 workflow "Release" {
   resolves = ["goreleaser"]
-  on = "release"
+  on = "create"
 }
 
 ## GORELEASER RESOLVES ##
@@ -25,18 +25,6 @@ action "generate-release-changelog" {
     SRC_PATH = "/github/workspace"
   }
   args = "-u gabeduke -p level --release-branch develop"
-  needs = ["created-filter"]
-
-  ######################
-  ## RELEASE WORKFLOW ##
-  ######################
-
-  ## GORELEASER RESOLVES ##
-}
-
-action "created-filter" {
-  uses = "actions/bin/filter@master"
-  args = "action create"
   needs = ["tag-filter"]
 }
 
