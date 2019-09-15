@@ -33,7 +33,6 @@ action "created-filter" {
   args = "action created"
 }
 
-
 ##################
 ## TAG WORKFLOW ##
 ##################
@@ -51,7 +50,6 @@ action "auto-commit" {
   args = "This is an auto-commit"
   secrets = ["GITHUB_TOKEN"]
 }
-
 
 action "bumpver" {
   uses = "./.github/actions/bumpver"
