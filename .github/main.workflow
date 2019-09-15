@@ -21,16 +21,22 @@ action "goreleaser" {
 action "generate-release-changelog" {
   uses = "docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta"
   secrets = ["CHANGELOG_GITHUB_TOKEN"]
-  needs = "created-filter"
   env = {
     SRC_PATH = "/github/workspace"
   }
   args = "-u gabeduke -p level --release-branch develop"
+  needs = ["tag-filter"]
+
+  ######################
+  ## RELEASE WORKFLOW ##
+  ######################
+
+  ## GORELEASER RESOLVES ##
 }
 
-action "created-filter" {
+action "tag-filter" {
   uses = "actions/bin/filter@master"
-  args = "action created"
+  args = "tag"
 }
 
 ##################
