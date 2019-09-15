@@ -25,13 +25,19 @@ action "generate-release-changelog" {
     SRC_PATH = "/github/workspace"
   }
   args = "-u gabeduke -p level --release-branch develop"
-  needs = ["tag-filter"]
+  needs = ["created-filter"]
 
   ######################
   ## RELEASE WORKFLOW ##
   ######################
 
   ## GORELEASER RESOLVES ##
+}
+
+action "created-filter" {
+  uses = "actions/bin/filter@master"
+  args = "action create"
+  needs = ["tag-filter"]
 }
 
 action "tag-filter" {
