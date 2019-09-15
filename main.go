@@ -22,7 +22,6 @@ func main() {
 	r.GET("/healthz", handlers.Healthz)
 	r.GET("/level", handlers.Level)
 
-
 	log.WithField("Port", port).Info("Starting service..")
 	r.Run(fmt.Sprintf(":%s", port))
 }
