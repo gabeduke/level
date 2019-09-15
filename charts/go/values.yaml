@@ -1,0 +1,28 @@
+# Default values for golang.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  pullPolicy: IfNotPresent
+service:
+  name: level
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 8080
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+basedomain: leetserve.com
+ingress:
+  enabled: true
+log:
+  ## valid handlers: cli, text, json, logfmt
+  handler: ""
+  ## valid levels: debug, info, warn, error, fatal
+  level: "debug"
+gin:
+  level: "release"
