@@ -6,6 +6,7 @@ jobs:
   created-filter:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v1
     - name: generate-release-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
       env:
