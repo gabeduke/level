@@ -1,6 +1,11 @@
 on:
   pull_request:
     branches: master
+  push:
+    branches:
+      - master
+      - develop
+
 name: Test
 jobs:
   test:
@@ -11,9 +16,6 @@ jobs:
       uses: ./.github/actions/golang
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}} #required
       with:
         args: test
-    - name: codecov
-      uses: pleo-io/actions/codecov@master
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

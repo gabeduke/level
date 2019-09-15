@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/apex/log"
-	"github.com/gabeduke/level-api/pkg/handlers"
-	"github.com/gabeduke/level-api/pkg/util"
-	"github.com/gin-gonic/gin"
 	"os"
+
+	log "github.com/apex/log"
+	"github.com/gabeduke/level-api/pkg/router"
+	"github.com/gabeduke/level-api/pkg/util"
 )
 
 func main() {
@@ -18,10 +18,11 @@ func main() {
 		port = "8081"
 	}
 
-	r := gin.Default()
-	r.GET("/healthz", handlers.Healthz)
-	r.GET("/level", handlers.Level)
+	r := router.GetRouter()
 
 	log.WithField("Port", port).Info("Starting service..")
-	r.Run(fmt.Sprintf(":%s", port))
+	err := r.Run(fmt.Sprintf(":%s", port))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

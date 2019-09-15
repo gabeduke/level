@@ -1,4 +1,4 @@
-package handlers
+package router
 
 import (
 	"fmt"
@@ -10,16 +10,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Healthz is a service healthcheck
-func Healthz(c *gin.Context) {
+// GetRouter returns a level router
+func GetRouter() *gin.Engine {
+
+	r := gin.Default()
+	r.GET("/healthz", healthz)
+	r.GET("/level", level)
+
+	return r
+}
+
+// healthz is a service healthcheck
+func healthz(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "healthy",
 	})
 }
 
-// Level gets the water level for a given station
+// level gets the water level for a given station
 // queryparams: ?station=[station]
-func Level(c *gin.Context) {
+func level(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "rmdv2")
 	url := fmt.Sprintf("http://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=%s&output=xml", station)
