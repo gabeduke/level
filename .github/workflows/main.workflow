@@ -1,6 +1,7 @@
 workflow "Release" {
   on = "push"
   resolves = ["goreleaser"]
+}
 
 action "is-tag" {
   uses = "actions/bin/filter@master"
