@@ -11,7 +11,6 @@ import (
 
 func InitLogger() {
 
-
 	logLevel := os.Getenv("LOG_LEVEL")
 	switch logLevel {
 	case "warn":
@@ -42,6 +41,6 @@ func InitLogger() {
 
 	log.WithFields(log.Fields{
 		"Handler": logHandler,
-		"Level": logLevel,
+		"Level":   logLevel,
 	}).Debug("Initializing logger..")
 }
