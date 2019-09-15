@@ -1,4 +1,4 @@
-#!/bin/sh -l
+#!/bin/bash
 
 TAG=$(cat /github/workspace/.release)
 printf -v DATA '{"ref": "refs/tags/%s","sha": "%s"}' "$TAG" "$GITHUB_SHA"
