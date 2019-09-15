@@ -15,7 +15,8 @@ jobs:
       uses: ./.github/actions/git-tags
       env:
         VERSION: "${GITHUB_WORKSPACE}/.release"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # must be a user token in order to trigger the release flow
+        GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
     - name: generate-tagged-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
       env:
