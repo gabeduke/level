@@ -2,3 +2,5 @@
 .idea
 CHANGELOG.md
 dist
+test-results.txt
+coverage.txt
