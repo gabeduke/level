@@ -31,23 +31,27 @@ func healthz(c *gin.Context) {
 // queryparams: ?station=[station]
 func level(c *gin.Context) {
 
-	station := c.DefaultQuery("station", "rmdv2")
+	station := c.DefaultQuery("station", "RMDV2")
 	url := fmt.Sprintf("http://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=%s&output=xml", station)
 
 	xmlBytes, err := getXML(url)
 	if err != nil {
 		log.Errorf("Failed to get XML: %v", err)
+		c.AbortWithError(417, err)
 	}
 
 	doc := etree.NewDocument()
 	err = doc.ReadFromBytes(xmlBytes)
 	if err != nil {
 		log.Error(err.Error())
+		c.AbortWithError(417, err)
 	}
 
-	root := doc.FindElement("/site/observed/datum")
-
-	reading := root.FindElement("primary").Text()
+	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
+	if reading == "" {
+		err = fmt.Errorf("unable to find root element for url: %s", url)
+		c.AbortWithError(417, err)
+	}
 	log.Debugf("Gauge Reading: %s", reading)
 
 	c.JSON(200, gin.H{
