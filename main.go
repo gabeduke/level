@@ -5,8 +5,8 @@ import (
 	"os"
 
 	log "github.com/apex/log"
-	"github.com/gabeduke/level-api/pkg/router"
-	"github.com/gabeduke/level-api/pkg/util"
+	"github.com/gabeduke/level/pkg/router"
+	"github.com/gabeduke/level/pkg/util"
 )
 
 func main() {
