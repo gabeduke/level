@@ -31,3 +31,4 @@ changelog:
 dockers:
   - image_templates:
     - dukeman/level
+    dockerfile: Dockerfile.ci
