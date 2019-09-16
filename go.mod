@@ -1,4 +1,4 @@
-module github.com/gabeduke/level-api
+module github.com/gabeduke/level
 
 require (
 	github.com/apex/log v1.1.1
