@@ -3,17 +3,20 @@ FROM golang as build
 # cache modules layer
 WORKDIR /app
 COPY go.mod go.sum ./
-RUN go get -d -v ./...
+RUN go mod download
 
 # build app layer
 COPY . .
-RUN go build -v .
+
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+RUN go build -a -installsuffix cgo -o level
 
 # executable layer
 FROM scratch
-COPY --from=build level /
+COPY --from=build /app/level level
 
 # executable layer
 ENV PORT 8080
 EXPOSE 8080
-ENTRYPOINT ["/level"]
+ENTRYPOINT ["./level"]
