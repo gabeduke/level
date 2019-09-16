@@ -1,0 +1,7 @@
+FROM scratch
+COPY level /
+
+# executable layer
+ENV PORT 8080
+EXPOSE 8080
+ENTRYPOINT ["/level"]

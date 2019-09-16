@@ -28,3 +28,7 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+dockers:
+  - image_templates:
+    - dukeman/level
+    dockerfile: Dockerfile.ci

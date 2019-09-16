@@ -47,7 +47,11 @@ func TestLevelRouteWithStation(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/level", nil)
-	req.URL.Query().Set("station", "RICV2")
+
+	q := req.URL.Query()
+	q.Add("station", "RICV2")
+	req.URL.RawQuery = q.Encode()
+
 	router.ServeHTTP(w, req)
 
 	level := &message{}
@@ -58,4 +62,26 @@ func TestLevelRouteWithStation(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	assert.NotEmpty(t, level.Message)
+}
+
+func TestLevelRouteWithBadStation(t *testing.T) {
+	router := GetRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/level", nil)
+
+	q := req.URL.Query()
+	q.Add("station", "asdf")
+	req.URL.RawQuery = q.Encode()
+
+	router.ServeHTTP(w, req)
+
+	level := &message{}
+	err := json.Unmarshal(w.Body.Bytes(), level)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	assert.Equal(t, level.Message, "")
+	assert.Equal(t, w.Code, 417)
 }
