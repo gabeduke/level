@@ -38,6 +38,9 @@ func level(c *gin.Context) {
 	if err != nil {
 		log.Errorf("Failed to get XML: %v", err)
 		c.AbortWithError(417, err)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	doc := etree.NewDocument()
@@ -45,12 +48,18 @@ func level(c *gin.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		c.AbortWithError(417, err)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
 	if reading == "" {
 		err = fmt.Errorf("unable to find root element for url: %s", url)
 		c.AbortWithError(417, err)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 	log.Debugf("Gauge Reading: %s", reading)
 
