@@ -37,7 +37,7 @@ func level(c *gin.Context) {
 	xmlBytes, err := getXML(url)
 	if err != nil {
 		log.Errorf("Failed to get XML: %v", err)
-		c.Error(err)
+		c.Error(err) //nolint
 		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
 	}
 
@@ -45,14 +45,14 @@ func level(c *gin.Context) {
 	err = doc.ReadFromBytes(xmlBytes)
 	if err != nil {
 		log.Error(err.Error())
-		c.Error(err)
+		c.Error(err) //nolint
 		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
 	}
 
 	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
 	if reading == "" {
 		err = fmt.Errorf("unable to find root element for url: %s", url)
-		c.Error(err)
+		c.Error(err) //nolint
 		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
 	}
 	log.Debugf("Gauge Reading: %s", reading)
