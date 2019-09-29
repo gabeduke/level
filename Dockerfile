@@ -1,4 +1,6 @@
-FROM golang as build
+FROM golang:alpine as build
+
+RUN apk --no-cache add ca-certificates
 
 # cache modules layer
 WORKDIR /app
@@ -15,6 +17,7 @@ RUN go build -a -installsuffix cgo -o level
 # executable layer
 FROM scratch
 COPY --from=build /app/level level
+COPY --from=build /etc/ssl/certs /etc/ssl/certs
 
 # executable layer
 ENV PORT 8080

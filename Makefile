@@ -12,4 +12,4 @@ lint:
 	golangci-lint run
 
 docker-build:
-	DOCKER_BUILDKIT=1 docker build --progress=plain -t $(REGISTRY)/$(IMG):$(TAG) .
+	DOCKER_BUILDKIT=1 docker build -t $(REGISTRY)/$(IMG):$(TAG) .
