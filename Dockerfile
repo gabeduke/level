@@ -12,7 +12,7 @@ COPY . .
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux
-RUN go build -a -installsuffix cgo -o level
+RUN go build -a -installsuffix cgo -o level -ldflags "-X main.version=$(cat .release)"
 
 # executable layer
 FROM scratch

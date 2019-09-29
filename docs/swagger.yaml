@@ -1,0 +1,55 @@
+definitions:
+  httputil.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+info:
+  contact:
+    email: gabeduke@gmail.com
+    name: Dukemon
+    url: leetserve.com
+  description: API to get the water level from NWS
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Level API
+  version: "1.0"
+paths:
+  /healthz:
+    get:
+      consumes:
+      - application/json
+      description: get health
+      operationId: healthz
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: return healthcheck
+  /level:
+    get:
+      consumes:
+      - application/json
+      description: get level by station
+      operationId: level
+      parameters:
+      - description: NWS Station to query
+        in: path
+        name: station
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "417":
+          description: Expectation Failed
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: return water level
+swagger: "2.0"

@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const v1 = "/api/v1"
+
 type message struct {
 	Message string `json:"message"`
 }
@@ -18,7 +20,7 @@ func TestHealthzRoute(t *testing.T) {
 	router := GetRouter()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/healthz", nil)
+	req, _ := http.NewRequest("GET", v1+"/healthz", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -27,9 +29,10 @@ func TestHealthzRoute(t *testing.T) {
 
 func TestLevelRoute(t *testing.T) {
 	router := GetRouter()
+	router.Group("/api/v1")
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/level", nil)
+	req, _ := http.NewRequest("GET", v1+"/level", nil)
 	router.ServeHTTP(w, req)
 
 	level := &message{}
@@ -44,9 +47,10 @@ func TestLevelRoute(t *testing.T) {
 
 func TestLevelRouteWithStation(t *testing.T) {
 	router := GetRouter()
+	router.Group("/api/v1")
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/level", nil)
+	req, _ := http.NewRequest("GET", v1+"/level", nil)
 
 	q := req.URL.Query()
 	q.Add("station", "RICV2")
@@ -66,9 +70,10 @@ func TestLevelRouteWithStation(t *testing.T) {
 
 func TestLevelRouteWithBadStation(t *testing.T) {
 	router := GetRouter()
+	router.Group("/api/v1")
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/level", nil)
+	req, _ := http.NewRequest("GET", v1+"/level", nil)
 
 	q := req.URL.Query()
 	q.Add("station", "asdf")
@@ -82,6 +87,6 @@ func TestLevelRouteWithBadStation(t *testing.T) {
 		log.Error(err.Error())
 	}
 
-	assert.Equal(t, level.Message, "")
+	assert.Equal(t, level.Message, "XML syntax error on line 95: invalid character entity &nbsp;")
 	assert.Equal(t, w.Code, 417)
 }
