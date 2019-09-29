@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/beevik/etree"
+	"github.com/gabeduke/level/pkg/httputil"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,13 +15,22 @@ import (
 func GetRouter() *gin.Engine {
 
 	r := gin.Default()
-	r.GET("/healthz", healthz)
-	r.GET("/level", level)
+	v1 := r.Group("/api/v1")
+
+	v1.GET("/level", level)
+	v1.GET("/healthz", healthz)
 
 	return r
 }
 
 // healthz is a service healthcheck
+// @Summary return healthcheck
+// @Description get health
+// @ID healthz
+// @Accept  json
+// @Produce  json
+// @Success 200
+// @Router /healthz [get]
 func healthz(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "healthy",
@@ -28,7 +38,15 @@ func healthz(c *gin.Context) {
 }
 
 // level gets the water level for a given station
-// queryparams: ?station=[station]
+// @Summary return water level
+// @Description get level by station
+// @ID level
+// @Accept  json
+// @Produce  json
+// @Param station path string false "NWS Station to query"
+// @Success 200
+// @Failure 417 {object} httputil.HTTPError
+// @Router /level [get]
 func level(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
@@ -37,23 +55,23 @@ func level(c *gin.Context) {
 	xmlBytes, err := getXML(url)
 	if err != nil {
 		log.Errorf("Failed to get XML: %v", err)
-		c.Error(err) //nolint
-		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+		return
 	}
 
 	doc := etree.NewDocument()
 	err = doc.ReadFromBytes(xmlBytes)
 	if err != nil {
 		log.Error(err.Error())
-		c.Error(err) //nolint
-		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+		return
 	}
 
 	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
 	if reading == "" {
 		err = fmt.Errorf("unable to find root element for url: %s", url)
-		c.Error(err) //nolint
-		c.JSON(http.StatusExpectationFailed, gin.H{"Error": err.Error()})
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+		return
 	}
 	log.Debugf("Gauge Reading: %s", reading)
 
