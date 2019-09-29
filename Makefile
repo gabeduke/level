@@ -5,6 +5,8 @@ REGISTRY ?= dukeman
 DOCKER_IMG = $(REGISTRY)/$(IMG):$(TAG)
 PORT = 8080
 
+.DEFAULT_GOAL = help
+
 .PHONY: help fmt test lint docker-build
 
 fmt: ## fmt project
@@ -35,13 +37,13 @@ swagger-readme:
 		--workdir /app \
 			node npx markdown-swagger /app/docs/swagger.yaml /app/README.md
 
-docker-build: swagger ## build container
+build: swagger ## build container
 	DOCKER_BUILDKIT=1 docker build -t $(DOCKER_IMG) .
 
 dev: swagger ## run program in dev mode
 	go run main.go
 
-run: docker-build ## run project in container
+run: docker ## run project in container
 	docker run -p $(PORT):8080 -it $(DOCKER_IMG)
 
 help:

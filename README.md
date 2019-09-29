@@ -17,9 +17,9 @@ Try out the API for free on Google Cloud Run:
 More detailed docs can be found [HERE](https://gabeduke.github.io/level/)
 
 <!-- markdown-swagger -->
- Endpoint   | Method | Auth? | Description
+ Endpoint   | Method | Auth? | Description         
  ---------- | ------ | ----- | --------------------
- `/healthz` | GET    | No    | get health
+ `/healthz` | GET    | No    | get health          
  `/level`   | GET    | No    | get level by station
 <!-- /markdown-swagger -->
 
