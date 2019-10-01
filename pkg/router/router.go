@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/apex/log"
 	"github.com/beevik/etree"
@@ -74,9 +75,10 @@ func level(c *gin.Context) {
 		return
 	}
 	log.Debugf("Gauge Reading: %s", reading)
+	f, err := strconv.ParseFloat(reading, 64)
 
 	c.JSON(200, gin.H{
-		"message": reading,
+		"reading": f,
 	})
 }
 
