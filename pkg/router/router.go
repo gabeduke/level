@@ -9,6 +9,7 @@ import (
 	"github.com/apex/log"
 	"github.com/beevik/etree"
 	"github.com/gabeduke/level/pkg/httputil"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +17,7 @@ import (
 func GetRouter() *gin.Engine {
 
 	r := gin.Default()
+	r.Use(cors.Default())
 	v1 := r.Group("/api/v1")
 
 	v1.GET("/level", level)
