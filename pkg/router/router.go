@@ -78,6 +78,9 @@ func level(c *gin.Context) {
 	}
 	log.Debugf("Gauge Reading: %s", reading)
 	f, err := strconv.ParseFloat(reading, 64)
+	if err != nil {
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+	}
 
 	c.JSON(200, gin.H{
 		"reading": f,
