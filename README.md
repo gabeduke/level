@@ -11,6 +11,10 @@ Try out the API for free on Google Cloud Run:
 
 [![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/gabeduke/level.git)
 
+Hack on the code in GitPod:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/gabeduke/level)
+
 
 ## API Documentation
 
