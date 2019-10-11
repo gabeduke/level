@@ -3,14 +3,13 @@
 ![](https://github.com/gabeduke/level/workflows/Fmt/badge.svg)
 ![](https://github.com/gabeduke/level/workflows/Tag/badge.svg)
 ![](https://github.com/gabeduke/level/workflows/Release/badge.svg)
-[![codecov](https://codecov.io/gh/gabeduke/level/branch/master/graph/badge.svg)](https://codecov.io/gh/gabeduke/level)o
+[![codecov](https://codecov.io/gh/gabeduke/level/branch/master/graph/badge.svg)](https://codecov.io/gh/gabeduke/level)
 
 # Level
 
-Try out the API for free on Google Cloud Run:
+Level is an API to query readings from the National Water Service. Readings can be found for most major water ways. 
 
-[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/gabeduke/level.git)
-
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/gabeduke/level)
 
 ## API Documentation
 
@@ -25,6 +24,10 @@ More detailed docs can be found [HERE](https://gabeduke.github.io/level/)
 
 ## Run
 
+Try out the API for free on Google Cloud Run:
+
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/gabeduke/level.git)
+
 ### Docker
 
 `make run` will serve the project in a local container
@@ -32,3 +35,5 @@ More detailed docs can be found [HERE](https://gabeduke.github.io/level/)
 ### Develop
 
 `make dev` will run the project in Go dev mode
+
+

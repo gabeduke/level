@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/apex/log"
 	"github.com/beevik/etree"
 	"github.com/gabeduke/level/pkg/httputil"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,12 +17,24 @@ import (
 func GetRouter() *gin.Engine {
 
 	r := gin.Default()
+	r.Use(cors.Default())
+	r.Use(gin.Recovery())
+	r.GET("/", RedirectRootToAPI(r))
+
 	v1 := r.Group("/api/v1")
 
 	v1.GET("/level", level)
 	v1.GET("/healthz", healthz)
 
 	return r
+}
+
+// RedirectRootToAPI redirects all calls from root endpoint to current API documentation endpoint
+func RedirectRootToAPI(r *gin.Engine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.URL.Path = "/api/v1/level"
+		r.HandleContext(c)
+	}
 }
 
 // healthz is a service healthcheck
@@ -74,9 +88,13 @@ func level(c *gin.Context) {
 		return
 	}
 	log.Debugf("Gauge Reading: %s", reading)
+	f, err := strconv.ParseFloat(reading, 64)
+	if err != nil {
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+	}
 
 	c.JSON(200, gin.H{
-		"message": reading,
+		"reading": f,
 	})
 }
 

@@ -3,6 +3,11 @@ on:
     branches:
       - master
       - develop
+  push:
+    branches:
+      - master
+      - develop
+
 name: Lint
 jobs:
   lint:
