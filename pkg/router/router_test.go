@@ -28,6 +28,23 @@ func TestHealthzRoute(t *testing.T) {
 	assert.Equal(t, "{\"message\":\"healthy\"}", w.Body.String())
 }
 
+func TestDefaultRoute(t *testing.T) {
+	router := GetRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/", nil)
+	router.ServeHTTP(w, req)
+
+	level := &reading{}
+	err := json.Unmarshal(w.Body.Bytes(), level)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	assert.Equal(t, 200, w.Code)
+	assert.NotEmpty(t, level.Reading)
+}
+
 func TestLevelRoute(t *testing.T) {
 	router := GetRouter()
 
