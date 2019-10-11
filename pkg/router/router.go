@@ -18,12 +18,24 @@ func GetRouter() *gin.Engine {
 
 	r := gin.Default()
 	r.Use(cors.Default())
+	r.Use(gin.Recovery())
+	r.GET("/", RedirectRootToAPI(r))
+
 	v1 := r.Group("/api/v1")
 
 	v1.GET("/level", level)
 	v1.GET("/healthz", healthz)
 
 	return r
+}
+
+
+// RedirectRootToAPI redirects all calls from root endpoint to current API documentation endpoint
+func RedirectRootToAPI(r *gin.Engine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.URL.Path = "/api/v1/level"
+		r.HandleContext(c)
+	}
 }
 
 // healthz is a service healthcheck
