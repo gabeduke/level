@@ -7,7 +7,8 @@
 
 # Level
 
-Hack on the code in GitPod:
+Level is an API to query readings from the National Water Service. Readings can be found for most major water ways. 
+
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/gabeduke/level)
 
 ## API Documentation
