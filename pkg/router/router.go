@@ -29,7 +29,6 @@ func GetRouter() *gin.Engine {
 	return r
 }
 
-
 // RedirectRootToAPI redirects all calls from root endpoint to current API documentation endpoint
 func RedirectRootToAPI(r *gin.Engine) gin.HandlerFunc {
 	return func(c *gin.Context) {
