@@ -1,5 +1,5 @@
 on:
-  push:
+  create:
     tags: "*"
 name: Release
 jobs:
@@ -7,10 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: "actions/bin/filter@master"
-      name: created-filter
-      with:
-        args: tag
     - name: generate-release-changelog
       uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
       env:
