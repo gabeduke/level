@@ -106,3 +106,20 @@ func TestLevelRouteWithBadStation(t *testing.T) {
 	assert.Equal(t, level.Message, "XML syntax error on line 95: invalid character entity &nbsp;")
 	assert.Equal(t, w.Code, 417)
 }
+
+func TestStationRoute(t *testing.T) {
+	router := GetRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", v1+"/stations", nil)
+	router.ServeHTTP(w, req)
+
+	stations := &stationsList{}
+	err := json.Unmarshal(w.Body.Bytes(), stations)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	assert.Equal(t, 200, w.Code)
+	assert.NotEmpty(t, stations.Points)
+}

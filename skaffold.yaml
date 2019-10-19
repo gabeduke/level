@@ -1,0 +1,10 @@
+apiVersion: skaffold/v1beta16
+kind: Config
+metadata:
+  name: level
+build:
+  artifacts:
+  - image: gcr.io/leetcloud-173303/github_gabeduke_level
+deploy:
+  kustomize:
+    path: deploy
