@@ -44,3 +44,14 @@ func InitLogger() {
 		"Level":   logLevel,
 	}).Debug("Initializing logger..")
 }
+
+func GetPort() string {
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+	return port
+
+}
