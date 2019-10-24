@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	log "github.com/apex/log"
 	"github.com/gabeduke/level/docs"
 	"github.com/gabeduke/level/pkg/router"
@@ -28,13 +26,7 @@ var version = "dev"
 
 func main() {
 
-	// setup
-	util.InitLogger()
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8081"
-	}
+	port := util.GetPort()
 
 	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", port)
@@ -55,4 +47,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+func init() {
+	util.InitLogger()
 }

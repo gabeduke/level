@@ -16,10 +16,11 @@ Level is an API to query readings from the National Water Service. Readings can 
 More detailed docs can be found [HERE](https://gabeduke.github.io/level/)
 
 <!-- markdown-swagger -->
- Endpoint   | Method | Auth? | Description         
- ---------- | ------ | ----- | --------------------
- `/healthz` | GET    | No    | get health          
- `/level`   | GET    | No    | get level by station
+ Endpoint    | Method | Auth? | Description         
+ ----------- | ------ | ----- | --------------------
+ `/healthz`  | GET    | No    | get health          
+ `/level`    | GET    | No    | get level by station
+ `/stations` | GET    | No    | get stations        
 <!-- /markdown-swagger -->
 
 ## Run

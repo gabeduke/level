@@ -52,4 +52,19 @@ paths:
           schema:
             $ref: '#/definitions/httputil.HTTPError'
       summary: return water level
+  /stations:
+    get:
+      consumes:
+      - application/json
+      description: get stations
+      operationId: stations
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "417":
+          description: Expectation Failed
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: returns list of stations
 swagger: "2.0"

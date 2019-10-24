@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/apex/log"
@@ -105,4 +106,44 @@ func TestLevelRouteWithBadStation(t *testing.T) {
 
 	assert.Equal(t, level.Message, "XML syntax error on line 95: invalid character entity &nbsp;")
 	assert.Equal(t, w.Code, 417)
+}
+
+func TestStationRoute(t *testing.T) {
+	router := GetRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", v1+"/stations", nil)
+	router.ServeHTTP(w, req)
+
+	stations := &stationsList{}
+	err := json.Unmarshal(w.Body.Bytes(), stations)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	assert.Equal(t, 200, w.Code)
+	assert.NotEmpty(t, stations.Points)
+}
+
+func Test_getXML(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		want    []byte
+		wantErr bool
+	}{
+		{name: "badUrl", url: "asdf", want: []byte(""), wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getXML(tt.url)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getXML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getXML() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

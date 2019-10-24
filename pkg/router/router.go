@@ -1,10 +1,12 @@
 package router
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/beevik/etree"
@@ -12,6 +14,24 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
+
+type stationsList struct {
+	Key    string `json:"key"`
+	Points []struct {
+		Lid          string `json:"lid"`
+		Latitude     string `json:"latitude"`
+		Longitude    string `json:"longitude"`
+		GaugeType    string `json:"gauge_type"`
+		ObsStatus    string `json:"obs_status"`
+		Name         string `json:"name"`
+		Wfo          string `json:"wfo"`
+		Inundation   string `json:"inundation"`
+		HsaDisplay   string `json:"hsa_display"`
+		State        string `json:"state"`
+		SuppressFcst string `json:"suppress_fcst"`
+		Icon         string `json:"icon"`
+	} `json:"points"`
+}
 
 // GetRouter returns a level router
 func GetRouter() *gin.Engine {
@@ -24,6 +44,7 @@ func GetRouter() *gin.Engine {
 	v1 := r.Group("/api/v1")
 
 	v1.GET("/level", level)
+	v1.GET("/stations", stations)
 	v1.GET("/healthz", healthz)
 
 	return r
@@ -49,6 +70,47 @@ func healthz(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "healthy",
 	})
+}
+
+// stations gets the list of stations for a region
+// @Summary returns list of stations
+// @Description get stations
+// @ID stations
+// @Accept  json
+// @Produce  json
+// @Success 200
+// @Failure 417 {object} httputil.HTTPError
+// @Router /stations [get]
+func stations(c *gin.Context) {
+
+	body := strings.NewReader(`key=akq&fcst_type=obs&percent=50&current_type=all`)
+	req, err := http.NewRequest("POST", "https://water.weather.gov/ahps/get_map_points.php", body)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Set("Accept", "*/*")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		httputil.NewError(c, http.StatusExpectationFailed, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	var t stationsList
+	err = json.Unmarshal([]byte(data), &t)
+	if err != nil {
+		httputil.NewError(c, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	c.JSON(200, &t)
 }
 
 // level gets the water level for a given station
@@ -107,12 +169,12 @@ func getXML(url string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("Status error: %v", resp.StatusCode)
+		return []byte{}, fmt.Errorf("status error: %v", resp.StatusCode)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return []byte{}, fmt.Errorf("Read body: %v", err)
+		return []byte{}, fmt.Errorf("read body: %v", err)
 	}
 
 	return data, nil

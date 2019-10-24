@@ -13,7 +13,7 @@ fmt: ## fmt project
 	go fmt ./...
 
 test: ## test project
-	go test ./... -race
+	go test ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 lint: ## lint project
 	golangci-lint run
