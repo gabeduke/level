@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/apex/log"
@@ -122,4 +123,27 @@ func TestStationRoute(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	assert.NotEmpty(t, stations.Points)
+}
+
+func Test_getXML(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		want    []byte
+		wantErr bool
+	}{
+		{name: "badUrl", url: "asdf", want: []byte(""), wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getXML(tt.url)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getXML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getXML() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
