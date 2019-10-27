@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: level
+  labels:
+    app: level
+spec:
+  selector:
+    matchLabels:
+      app: level
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: level
+    spec:
+      containers:
+      - name: level
+        image: level
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+          - name: "PORT"
+            value: "8080"
+          - name: "GIN_MODE"
+            value: "release"
+          - name: "LOG_LEVEL"
+            value: "debug"
+          - name: "LOG_HANDLER"
+            value: ""
+        resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
