@@ -696,7 +696,7 @@ margin-bottom: 20px;
   <script>
     // Script section to load models into a JS Var
     var defs = {}
-            defs.httputil.HTTPError = {
+        defs["httputil.HTTPError"] = {
   "type" : "object",
   "properties" : {
     "code" : {
@@ -1233,7 +1233,7 @@ except ApiException as e:
                                         if (schema.$ref != null) {
                                           schema = defsParser.$refs.get(schema.$ref);
                                         } else {
-                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          schemaWrapper.definitions = defs;
                                           $RefParser.dereference(schemaWrapper).catch(function(err) {
                                             console.log(err);
                                           });
@@ -1484,7 +1484,7 @@ except ApiException as e:
                                         if (schema.$ref != null) {
                                           schema = defsParser.$refs.get(schema.$ref);
                                         } else {
-                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          schemaWrapper.definitions = defs;
                                           $RefParser.dereference(schemaWrapper).catch(function(err) {
                                             console.log(err);
                                           });
@@ -2712,6 +2712,12 @@ var JSONSchemaView = (function () {
         return this.element;
       }
 
+        if (this.schema && this.schema.example) {
+            var exampleDiv = document.createElement('div');
+            exampleDiv.innerHTML = '<div style="display: block" class="example">\n          <span style="color: #808080" class="name">example: ' + this.schema.example + '</span>\n        </div>';
+            this.element.appendChild(exampleDiv.querySelector('.example'));
+        }
+
       if (!this.isCollapsed) {
         this.appendChildren(this.element);
       }
@@ -3238,7 +3244,7 @@ g,0<c.length&&(c=Aa[c[0]])&&(a.c[e]=c))}a.c[e]||(c=Aa[e])&&(a.c[e]=c);for(c=0;c<
 
   <script>
     var schemaWrapper = {};
-    schemaWrapper.definitions = Object.assign({}, defs);
+    schemaWrapper.definitions = defs;
     defsParser = new $RefParser();
     defsParser.dereference(schemaWrapper).catch(function(err) {
       console.log(err);

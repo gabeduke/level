@@ -3,35 +3,17 @@ package router
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gabeduke/level/pkg/nws"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/beevik/etree"
 	"github.com/gabeduke/level/pkg/httputil"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
-
-type stationsList struct {
-	Key    string `json:"key"`
-	Points []struct {
-		Lid          string `json:"lid"`
-		Latitude     string `json:"latitude"`
-		Longitude    string `json:"longitude"`
-		GaugeType    string `json:"gauge_type"`
-		ObsStatus    string `json:"obs_status"`
-		Name         string `json:"name"`
-		Wfo          string `json:"wfo"`
-		Inundation   string `json:"inundation"`
-		HsaDisplay   string `json:"hsa_display"`
-		State        string `json:"state"`
-		SuppressFcst string `json:"suppress_fcst"`
-		Icon         string `json:"icon"`
-	} `json:"points"`
-}
 
 // GetRouter returns a level router
 func GetRouter() *gin.Engine {
@@ -103,7 +85,7 @@ func stations(c *gin.Context) {
 		log.Error(err.Error())
 	}
 
-	var t stationsList
+	var t nws.StationsList
 	err = json.Unmarshal([]byte(data), &t)
 	if err != nil {
 		httputil.NewError(c, http.StatusUnprocessableEntity, err)
@@ -128,54 +110,29 @@ func level(c *gin.Context) {
 	station := c.DefaultQuery("station", "RMDV2")
 	url := fmt.Sprintf("http://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=%s&output=xml", station)
 
-	xmlBytes, err := getXML(url)
+	nwsData := nws.NWS{}
+
+	i := nws.GetNwsData{}
+	err := i.ScrapeNws(url, &nwsData)
 	if err != nil {
-		log.Errorf("Failed to get XML: %v", err)
-		httputil.NewError(c, http.StatusExpectationFailed, err)
+		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	doc := etree.NewDocument()
-	err = doc.ReadFromBytes(xmlBytes)
-	if err != nil {
-		log.Error(err.Error())
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-
-	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
+	reading := nwsData.Observed.Datum[0].Primary.Text
 	if reading == "" {
 		err = fmt.Errorf("unable to find root element for url: %s", url)
 		httputil.NewError(c, http.StatusExpectationFailed, err)
 		return
 	}
 	log.Debugf("Gauge Reading: %s", reading)
+
 	f, err := strconv.ParseFloat(reading, 64)
 	if err != nil {
-		httputil.NewError(c, http.StatusExpectationFailed, err)
+		log.Error(err.Error())
 	}
 
 	c.JSON(200, gin.H{
 		"reading": f,
 	})
-}
-
-// tweaked from: https://stackoverflow.com/a/42718113/1170664
-func getXML(url string) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return []byte{}, fmt.Errorf("GET error: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("status error: %v", resp.StatusCode)
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return []byte{}, fmt.Errorf("read body: %v", err)
-	}
-
-	return data, nil
 }

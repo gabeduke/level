@@ -43,6 +43,7 @@ func main() {
 
 	// run
 	log.WithField("Port", port).Info("Starting service..")
+	log.Debug("Browse API: http://localhost:8081/swagger/index.html")
 	err := r.Run(fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatal(err.Error())

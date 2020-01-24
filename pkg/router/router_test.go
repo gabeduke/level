@@ -2,9 +2,9 @@ package router
 
 import (
 	"encoding/json"
+	"github.com/gabeduke/level/pkg/nws"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/apex/log"
@@ -94,6 +94,7 @@ func TestLevelRouteWithBadStation(t *testing.T) {
 	q := req.URL.Query()
 	q.Add("station", "asdf")
 	req.URL.RawQuery = q.Encode()
+	t.Log(req.URL)
 
 	router.ServeHTTP(w, req)
 	t.Log(w.Body.String())
@@ -105,7 +106,7 @@ func TestLevelRouteWithBadStation(t *testing.T) {
 	}
 
 	assert.Equal(t, level.Message, "XML syntax error on line 95: invalid character entity &nbsp;")
-	assert.Equal(t, w.Code, 417)
+	assert.Equal(t, w.Code, 424)
 }
 
 func TestStationRoute(t *testing.T) {
@@ -115,7 +116,7 @@ func TestStationRoute(t *testing.T) {
 	req, _ := http.NewRequest("GET", v1+"/stations", nil)
 	router.ServeHTTP(w, req)
 
-	stations := &stationsList{}
+	stations := &nws.StationsList{}
 	err := json.Unmarshal(w.Body.Bytes(), stations)
 	if err != nil {
 		log.Error(err.Error())
@@ -123,27 +124,4 @@ func TestStationRoute(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	assert.NotEmpty(t, stations.Points)
-}
-
-func Test_getXML(t *testing.T) {
-	tests := []struct {
-		name    string
-		url     string
-		want    []byte
-		wantErr bool
-	}{
-		{name: "badUrl", url: "asdf", want: []byte(""), wantErr: true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := getXML(tt.url)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getXML() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getXML() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

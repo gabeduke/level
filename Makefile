@@ -21,17 +21,20 @@ lint: ## lint project
 swagger: swagger-init swagger-static swagger-readme ## rebuild swagger docs
 
 swagger-init:
-	swag init
+	$(info INFO init swagger)
+	@swag init
 
 swagger-static:
-	docker run --rm -v ${PWD}:/local --user $(shell id -u):$(shell id -u) \
+	$(info INFO generating swagger static files)
+	@docker run --rm -v ${PWD}:/local --user $(shell id -u):$(shell id -u) \
 		swaggerapi/swagger-codegen-cli generate \
 		-i /local/docs/swagger.yaml \
 		-l html2 \
 		-o /local/docs
 
 swagger-readme:
-	docker run --rm \
+	$(info INFO generating swagger readme)
+	@docker run --rm \
 		--user $(shell id -u):$(shell id -u) \
 		--volume $(shell pwd):/app \
 		--workdir /app \
@@ -41,7 +44,8 @@ build: swagger ## build container
 	DOCKER_BUILDKIT=1 docker build -t $(DOCKER_IMG) .
 
 dev: swagger ## run program in dev mode
-	go run main.go
+	$(info INFO serving API in 'dev' mode)
+	LOG_LEVEL=debug go run main.go
 
 run: docker ## run project in container
 	docker run -p $(PORT):8080 -it $(DOCKER_IMG)
