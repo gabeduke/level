@@ -1,18 +1,11 @@
 package router
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/gabeduke/level/pkg/nws"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
-
-	"github.com/apex/log"
 	"github.com/gabeduke/level/pkg/httputil"
+	"github.com/gabeduke/level/pkg/nws"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // GetRouter returns a level router
@@ -61,38 +54,20 @@ func healthz(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Success 200
-// @Failure 417 {object} httputil.HTTPError
+// @Failure 424 {object} httputil.HTTPError
 // @Router /stations [get]
 func stations(c *gin.Context) {
 
-	body := strings.NewReader(`key=akq&fcst_type=obs&percent=50&current_type=all`)
-	req, err := http.NewRequest("POST", "https://water.weather.gov/ahps/get_map_points.php", body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("Accept", "*/*")
+	stations := nws.StationsList{}
 
-	resp, err := http.DefaultClient.Do(req)
+	i := nws.NwsStationAPI{}
+	err := i.GetStationList(&stations)
 	if err != nil {
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	var t nws.StationsList
-	err = json.Unmarshal([]byte(data), &t)
-	if err != nil {
-		httputil.NewError(c, http.StatusUnprocessableEntity, err)
+		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	c.JSON(200, &t)
+	c.JSON(200, &stations)
 }
 
 // level gets the water level for a given station
@@ -103,36 +78,20 @@ func stations(c *gin.Context) {
 // @Produce  json
 // @Param station path string false "NWS Station to query"
 // @Success 200
-// @Failure 417 {object} httputil.HTTPError
+// @Failure 424 {object} httputil.HTTPError
 // @Router /level [get]
 func level(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
-	url := fmt.Sprintf("http://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=%s&output=xml", station)
 
-	nwsData := nws.NWS{}
-
-	i := nws.GetNwsData{}
-	err := i.ScrapeNws(url, &nwsData)
+	i := nws.NwsStationAPI{}
+	lvl, err := i.GetLevel(station)
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	reading := nwsData.Observed.Datum[0].Primary.Text
-	if reading == "" {
-		err = fmt.Errorf("unable to find root element for url: %s", url)
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-	log.Debugf("Gauge Reading: %s", reading)
-
-	f, err := strconv.ParseFloat(reading, 64)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
 	c.JSON(200, gin.H{
-		"reading": f,
+		"reading": lvl,
 	})
 }

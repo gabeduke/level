@@ -1,175 +1,105 @@
 package nws
 
 import (
+	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"github.com/apex/log"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
-type StationsList struct {
-	Key    string `json:"key"`
-	Points []struct {
-		Lid          string `json:"lid"`
-		Latitude     string `json:"latitude"`
-		Longitude    string `json:"longitude"`
-		GaugeType    string `json:"gauge_type"`
-		ObsStatus    string `json:"obs_status"`
-		Name         string `json:"name"`
-		Wfo          string `json:"wfo"`
-		Inundation   string `json:"inundation"`
-		HsaDisplay   string `json:"hsa_display"`
-		State        string `json:"state"`
-		SuppressFcst string `json:"suppress_fcst"`
-		Icon         string `json:"icon"`
-	} `json:"points"`
+const baseUrl = "http://water.weather.gov/ahps2/hydrograph_to_xml.php"
+
+type nwsActions interface {
+	GetLevel(url string) (float64, error)
+	GetStationList(list *StationsList) error
 }
 
-type NWS struct {
-	//Name           string `xml:"name,attr"`
-	//ID             string `xml:"id,attr"`
-	//Generationtime string `xml:"generationtime,attr"`
-	//Sigstages      struct {
-	//	Text string `xml:",chardata"`
-	//	Low  struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"low"`
-	//	Action struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"action"`
-	//	Bankfull struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"bankfull"`
-	//	Flood struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"flood"`
-	//	Moderate struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"moderate"`
-	//	Major struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"major"`
-	//	Record struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"record"`
-	//} `xml:"sigstages"`
-	//Sigflows struct {
-	//	Text string `xml:",chardata"`
-	//	Low  struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"low"`
-	//	Action struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"action"`
-	//	Bankfull struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"bankfull"`
-	//	Flood struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"flood"`
-	//	Moderate struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"moderate"`
-	//	Major struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"major"`
-	//	Record struct {
-	//		Text  string `xml:",chardata"`
-	//		Units string `xml:"units,attr"`
-	//	} `xml:"record"`
-	//} `xml:"sigflows"`
-	//Zerodatum struct {
-	//	Text  string `xml:",chardata"`
-	//	Units string `xml:"units,attr"`
-	//} `xml:"zerodatum"`
-	//Rating struct {
-	//	Text    string `xml:",chardata"`
-	//	Dignity string `xml:"dignity,attr"`
-	//	Datum   []struct {
-	//		Text       string `xml:",chardata"`
-	//		Stage      string `xml:"stage,attr"`
-	//		StageUnits string `xml:"stageUnits,attr"`
-	//		Flow       string `xml:"flow,attr"`
-	//		FlowUnits  string `xml:"flowUnits,attr"`
-	//	} `xml:"datum"`
-	//} `xml:"rating"`
-	//AltRating struct {
-	//	Text    string `xml:",chardata"`
-	//	Dignity string `xml:"dignity,attr"`
-	//	Datum   []struct {
-	//		Text       string `xml:",chardata"`
-	//		Stage      string `xml:"stage,attr"`
-	//		StageUnits string `xml:"stageUnits,attr"`
-	//		Flow       string `xml:"flow,attr"`
-	//		FlowUnits  string `xml:"flowUnits,attr"`
-	//	} `xml:"datum"`
-	//} `xml:"alt_rating"`
-	Observed struct {
-		//Text  string `xml:",chardata"`
-		Datum []struct {
-			//Text  string `xml:",chardata"`
-			//Valid struct {
-			//	Text     string `xml:",chardata"`
-			//	Timezone string `xml:"timezone,attr"`
-			//} `xml:"valid"`
-			Primary struct {
-				Text  string `xml:",chardata"`
-				Name  string `xml:"name,attr"`
-				Units string `xml:"units,attr"`
-			} `xml:"primary"`
-			//Secondary struct {
-			//	Text  string `xml:",chardata"`
-			//	Name  string `xml:"name,attr"`
-			//	Units string `xml:"units,attr"`
-			//} `xml:"secondary"`
-			//Pedts string `xml:"pedts"`
-		} `xml:"datum"`
-	} `xml:"observed"`
-	//Forecast struct {
-	//	Text     string `xml:",chardata"`
-	//	Timezone string `xml:"timezone,attr"`
-	//	Issued   string `xml:"issued,attr"`
-	//	Datum    []struct {
-	//		Text  string `xml:",chardata"`
-	//		Valid struct {
-	//			Text     string `xml:",chardata"`
-	//			Timezone string `xml:"timezone,attr"`
-	//		} `xml:"valid"`
-	//		Primary struct {
-	//			Text  string `xml:",chardata"`
-	//			Name  string `xml:"name,attr"`
-	//			Units string `xml:"units,attr"`
-	//		} `xml:"primary"`
-	//		Secondary struct {
-	//			Text  string `xml:",chardata"`
-	//			Name  string `xml:"name,attr"`
-	//			Units string `xml:"units,attr"`
-	//		} `xml:"secondary"`
-	//		Pedts string `xml:"pedts"`
-	//	} `xml:"datum"`
-	//} `xml:"forecast"`
+//nolint
+type nwsConfig struct {
+	baseurl string
 }
 
-type GetWaterData interface {
-	ScrapeNws(url string, dataContainer *NWS) error
+type nwsStationInfo struct {
+	nwsActions
+	nwsConfig
 }
 
-type GetNwsData struct{}
+// NwsStationAPI is the consumable API for accessing NWS station data
+type NwsStationAPI struct {
+	nwsStationInfo
+}
 
-func (n GetNwsData) ScrapeNws(url string, data *NWS) error {
+func (i *nwsStationInfo) getStationConfig() {
+	i.baseurl = baseUrl
+	log.Infof("Get default baseurl: %s", i.baseurl)
+}
+
+// GetLevel returns the level for a given station
+func (i *nwsStationInfo) GetLevel(station string) (float64, error) {
+
+	if i.baseurl == "" {
+		i.getStationConfig()
+	}
+
+	url := fmt.Sprintf("%s?gage=%s&output=xml", i.baseurl, station)
+	log.Debugf("GetLevel URL: %s", url)
+
+	nwsData := NWS{}
+
+	err := getStationInfo(url, &nwsData)
+	if err != nil {
+		return 0, err
+	}
+
+	reading := nwsData.Observed.Datum[0].Primary.Text
+	if reading == "" {
+		err = fmt.Errorf("unable to find observed datum element for url: %s", url)
+		return 0, err
+	}
+	log.Debugf("Gauge Reading: %s", reading)
+
+	f, err := strconv.ParseFloat(reading, 64)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	return f, nil
+}
+
+func (i *nwsStationInfo) GetStationList(list *StationsList) error {
+
+	body := strings.NewReader(`key=akq&fcst_type=obs&percent=50&current_type=all`)
+	req, err := http.NewRequest("POST", "https://water.weather.gov/ahps/get_map_points.php", body)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Set("Accept", "*/*")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal([]byte(data), &list)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getStationInfo(url string, data *NWS) error {
 	log.Debug(url)
 
 	resp, err := http.Get(url)
