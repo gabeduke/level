@@ -53,8 +53,8 @@
                 ],
                 "responses": {
                     "200": {},
-                    "417": {
-                        "description": "Expectation Failed",
+                    "424": {
+                        "description": "Failed Dependency",
                         "schema": {
                             "$ref": "#/definitions/httputil.HTTPError"
                         }
@@ -75,8 +75,8 @@
                 "operationId": "stations",
                 "responses": {
                     "200": {},
-                    "417": {
-                        "description": "Expectation Failed",
+                    "424": {
+                        "description": "Failed Dependency",
                         "schema": {
                             "$ref": "#/definitions/httputil.HTTPError"
                         }
