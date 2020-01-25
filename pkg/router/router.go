@@ -1,37 +1,12 @@
 package router
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
-
-	"github.com/apex/log"
-	"github.com/beevik/etree"
 	"github.com/gabeduke/level/pkg/httputil"
+	"github.com/gabeduke/level/pkg/nws"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
-
-type stationsList struct {
-	Key    string `json:"key"`
-	Points []struct {
-		Lid          string `json:"lid"`
-		Latitude     string `json:"latitude"`
-		Longitude    string `json:"longitude"`
-		GaugeType    string `json:"gauge_type"`
-		ObsStatus    string `json:"obs_status"`
-		Name         string `json:"name"`
-		Wfo          string `json:"wfo"`
-		Inundation   string `json:"inundation"`
-		HsaDisplay   string `json:"hsa_display"`
-		State        string `json:"state"`
-		SuppressFcst string `json:"suppress_fcst"`
-		Icon         string `json:"icon"`
-	} `json:"points"`
-}
 
 // GetRouter returns a level router
 func GetRouter() *gin.Engine {
@@ -79,38 +54,20 @@ func healthz(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Success 200
-// @Failure 417 {object} httputil.HTTPError
+// @Failure 424 {object} httputil.HTTPError
 // @Router /stations [get]
 func stations(c *gin.Context) {
 
-	body := strings.NewReader(`key=akq&fcst_type=obs&percent=50&current_type=all`)
-	req, err := http.NewRequest("POST", "https://water.weather.gov/ahps/get_map_points.php", body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("Accept", "*/*")
+	stations := nws.StationsList{}
 
-	resp, err := http.DefaultClient.Do(req)
+	i := nws.NwsStationAPI{}
+	err := i.GetStationList(&stations)
 	if err != nil {
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	var t stationsList
-	err = json.Unmarshal([]byte(data), &t)
-	if err != nil {
-		httputil.NewError(c, http.StatusUnprocessableEntity, err)
+		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	c.JSON(200, &t)
+	c.JSON(200, &stations)
 }
 
 // level gets the water level for a given station
@@ -121,61 +78,20 @@ func stations(c *gin.Context) {
 // @Produce  json
 // @Param station path string false "NWS Station to query"
 // @Success 200
-// @Failure 417 {object} httputil.HTTPError
+// @Failure 424 {object} httputil.HTTPError
 // @Router /level [get]
 func level(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
-	url := fmt.Sprintf("http://water.weather.gov/ahps2/hydrograph_to_xml.php?gage=%s&output=xml", station)
 
-	xmlBytes, err := getXML(url)
+	i := nws.NwsStationAPI{}
+	lvl, err := i.GetLevel(station)
 	if err != nil {
-		log.Errorf("Failed to get XML: %v", err)
-		httputil.NewError(c, http.StatusExpectationFailed, err)
+		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
-	}
-
-	doc := etree.NewDocument()
-	err = doc.ReadFromBytes(xmlBytes)
-	if err != nil {
-		log.Error(err.Error())
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-
-	reading := doc.FindElement("//*/observed/datum[1]/primary").Text()
-	if reading == "" {
-		err = fmt.Errorf("unable to find root element for url: %s", url)
-		httputil.NewError(c, http.StatusExpectationFailed, err)
-		return
-	}
-	log.Debugf("Gauge Reading: %s", reading)
-	f, err := strconv.ParseFloat(reading, 64)
-	if err != nil {
-		httputil.NewError(c, http.StatusExpectationFailed, err)
 	}
 
 	c.JSON(200, gin.H{
-		"reading": f,
+		"reading": lvl,
 	})
-}
-
-// tweaked from: https://stackoverflow.com/a/42718113/1170664
-func getXML(url string) ([]byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return []byte{}, fmt.Errorf("GET error: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return []byte{}, fmt.Errorf("status error: %v", resp.StatusCode)
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return []byte{}, fmt.Errorf("read body: %v", err)
-	}
-
-	return data, nil
 }

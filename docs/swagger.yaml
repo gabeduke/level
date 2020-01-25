@@ -47,8 +47,8 @@ paths:
       - application/json
       responses:
         "200": {}
-        "417":
-          description: Expectation Failed
+        "424":
+          description: Failed Dependency
           schema:
             $ref: '#/definitions/httputil.HTTPError'
       summary: return water level
@@ -62,8 +62,8 @@ paths:
       - application/json
       responses:
         "200": {}
-        "417":
-          description: Expectation Failed
+        "424":
+          description: Failed Dependency
           schema:
             $ref: '#/definitions/httputil.HTTPError'
       summary: returns list of stations
