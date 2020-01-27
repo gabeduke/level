@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"github.com/gabeduke/level/pkg/httputil"
 	"github.com/gabeduke/level/pkg/nws"
 	"github.com/gin-contrib/cors"
@@ -21,6 +22,7 @@ func GetRouter() *gin.Engine {
 	v1.GET("/level", level)
 	v1.GET("/stations", stations)
 	v1.GET("/healthz", healthz)
+	v1.POST("/slack", slack)
 
 	return r
 }
@@ -45,6 +47,42 @@ func healthz(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "healthy",
 	})
+}
+
+// slack gets the list of stations for a region
+// @Summary returns list of stations
+// @Description get stations
+// @ID stations
+// @Accept  json
+// @Produce  json
+// @Success 200
+// @Failure 424 {object} httputil.HTTPError
+// @Router /stations [get]
+func slack(c *gin.Context) {
+
+	station := c.DefaultQuery("station", "RMDV2")
+
+	i := nws.NwsStationAPI{}
+	lvl, err := i.GetLevel(station)
+	if err != nil {
+		httputil.NewError(c, http.StatusFailedDependency, err)
+		return
+	}
+
+	slack := nws.Slack{
+		Text:         fmt.Sprintf("%f", lvl),
+		ResponseType: "in_channel",
+		Parse:        "full",
+		UnfurlLinks:  true,
+		UnfurlMedia:  true,
+		Attachments: []struct {
+			ImageURL string `json:"image_url"`
+		}{
+			{ImageURL: fmt.Sprintf("https://water.weather.gov/resources/hydrographs/%s_hg.png", station)},
+		},
+	}
+
+	c.JSON(200, &slack)
 }
 
 // stations gets the list of stations for a region
