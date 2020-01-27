@@ -157,3 +157,14 @@ type NWS struct {
 	//	} `xml:"datum"`
 	//} `xml:"forecast"`
 }
+
+type Slack struct {
+	Parse        string `json:"parse"`
+	ResponseType string `json:"response_type"`
+	Text         string `json:"text"`
+	Attachments  []struct {
+		ImageURL string `json:"image_url"`
+	} `json:"attachments"`
+	UnfurlMedia bool `json:"unfurl_media"`
+	UnfurlLinks bool `json:"unfurl_links"`
+}

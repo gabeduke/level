@@ -52,6 +52,21 @@ paths:
           schema:
             $ref: '#/definitions/httputil.HTTPError'
       summary: return water level
+  /slack:
+    post:
+      consumes:
+      - application/json
+      description: return a slack response
+      operationId: slack
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "424":
+          description: Failed Dependency
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: return a slack response
   /stations:
     get:
       consumes:

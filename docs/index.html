@@ -732,6 +732,9 @@ margin-bottom: 20px;
                     <li data-group="Default" data-name="level" class="">
                       <a href="#api-Default-level">level</a>
                     </li>
+                    <li data-group="Default" data-name="slack" class="">
+                      <a href="#api-Default-slack">slack</a>
+                    </li>
                     <li data-group="Default" data-name="stations" class="">
                       <a href="#api-Default-stations">stations</a>
                     </li>
@@ -1249,6 +1252,257 @@ except ApiException as e:
                                     </script>
                                   </div>
                                   <input id='responses-level-424-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-slack">
+                      <article id="api-Default-slack-0" data-group="User" data-name="slack" data-version="0">
+                        <div class="pull-left">
+                          <h1>slack</h1>
+                          <p>return a slack response</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked">return a slack response</p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/slack</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-slack-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-slack-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-slack-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-slack-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-slack-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-slack-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-slack-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST "https://localhost/slack"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-slack-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        
+        DefaultApi apiInstance = new DefaultApi();
+        try {
+            apiInstance.slack();
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#slack");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-slack-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+        try {
+            apiInstance.slack();
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#slack");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-slack-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-slack-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+// return a slack response
+[apiInstance slackWithCompletionHandler: 
+              ^(NSError* error) {
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-slack-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var LevelApi = require('level_api');
+
+var api = new LevelApi.DefaultApi()
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.slack(callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-slack-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-slack-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class slackExample
+    {
+        public void main()
+        {
+            
+            var apiInstance = new DefaultApi();
+
+            try
+            {
+                // return a slack response
+                apiInstance.slack();
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.slack: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-slack-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\Api\DefaultApi();
+
+try {
+    $api_instance->slack();
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->slack: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-slack-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::DefaultApi;
+
+my $api_instance = WWW::SwaggerClient::DefaultApi->new();
+
+eval { 
+    $api_instance->slack();
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->slack: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-slack-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.DefaultApi()
+
+try: 
+    # return a slack response
+    api_instance.slack()
+except ApiException as e:
+    print("Exception when calling DefaultApi->slack: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 -  </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                            </div>
+
+                            <h3> Status: 424 - Failed Dependency </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-slack-424-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-slack-424-schema">
+                                  <div id='responses-slack-424-schema-424' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Failed Dependency",
+  "schema" : {
+    "$ref" : "#/definitions/httputil.HTTPError"
+  }
+};
+                                        var schema = schemaWrapper.schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = defs;
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-slack-424-schema-data').val(stringify(schema));
+                                        var result = $('#responses-slack-424-schema-424');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-slack-424-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 
