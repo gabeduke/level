@@ -49,15 +49,15 @@ func healthz(c *gin.Context) {
 	})
 }
 
-// slack gets the list of stations for a region
-// @Summary returns list of stations
-// @Description get stations
-// @ID stations
+// slack returns a package with the level and image link
+// @Summary return a slack response
+// @Description return a slack response
+// @ID slack
 // @Accept  json
 // @Produce  json
 // @Success 200
 // @Failure 424 {object} httputil.HTTPError
-// @Router /stations [get]
+// @Router /slack [post]
 func slack(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
