@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 // GetRouter returns a level router
@@ -78,7 +79,7 @@ func slack(c *gin.Context) {
 		Attachments: []struct {
 			ImageURL string `json:"image_url"`
 		}{
-			{ImageURL: fmt.Sprintf("https://water.weather.gov/resources/hydrographs/%s_hg.png", station)},
+			{ImageURL: fmt.Sprintf("https://water.weather.gov/resources/hydrographs/%s_hg.png", strings.ToLower(station))},
 		},
 	}
 
