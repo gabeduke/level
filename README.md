@@ -36,4 +36,11 @@ Try out the API for free on Google Cloud Run:
 
 `make dev` will run the project in Go dev mode
 
+### Bootstrap (terraform)
 
+```bash
+git submodule update
+make init
+make import
+make apply
+```

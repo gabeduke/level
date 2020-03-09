@@ -1,3 +1,7 @@
+include $(CURDIR)/bootstrap/Makefile
+SERVICE_NAME := level
+VAR_FILE := $(CURDIR)/level.tfvars
+
 # Docker config
 TAG ?= latest
 IMG ?= level

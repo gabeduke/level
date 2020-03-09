@@ -15,7 +15,7 @@ steps:
       - '--image'
       - 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME'
       - '--region'
-      - 'us-central1'
+      - 'us-east1'
       - '--platform'
       - 'managed'
 images:
