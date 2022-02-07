@@ -4,7 +4,6 @@ steps:
     args: ['build', '-t', 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME', '.']
   # Push the image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/[PROJECT_ID]/[IMAGE]:$COMMIT_SHA']
     args: ['push', 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME']
   # Deploy image to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
