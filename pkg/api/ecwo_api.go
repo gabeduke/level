@@ -15,11 +15,11 @@ type EcwoAPI struct {
 
 func (e *EcwoAPI) GetLevel(station string) (float64, error) {
 	if e.baseurl == "" {
-		e.baseurl = "https://wateroffice.ec.gc.ca/services/real_time_data/csv/inline"
+		e.baseurl = "https://wateroffice.ec.gc.ca/services/real_time_data/csv/inline?station="
 		log.Infof("Get default baseurl: %s", e.baseurl)
 	}
 
-	url := fmt.Sprintf("%s?station=%s", e.baseurl, station)
+	url := fmt.Sprintf("%s%s", e.baseurl, station)
 	log.Debugf("GetLevel URL: %s", url)
 
 	resp, err := http.Get(url)
@@ -60,7 +60,7 @@ func (e *EcwoAPI) GetLevel(station string) (float64, error) {
 }
 
 func (e *EcwoAPI) GetStationList() ([]Station, error) {
-	url := "https://wateroffice.ec.gc.ca/services/real_time_data/stations/csv/inline"
+	url := "https://wateroffice.ec.gc.ca/services/real_time_data/csv/inline"
 	log.Debugf("GetStationList URL: %s", url)
 
 	resp, err := http.Get(url)
