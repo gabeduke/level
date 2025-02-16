@@ -2,106 +2,103 @@ package api
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"github.com/apex/log"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type NwsAPI struct {
 	baseurl string
 }
 
+// GetLevel returns the temperature value (or water level if available)
+// for the specified station based on the latest observation.
 func (n *NwsAPI) GetLevel(station string) (float64, error) {
 	if n.baseurl == "" {
-		n.baseurl = "http://water.weather.gov/ahps2/hydrograph_to_xml.php"
-		log.Infof("Get default baseurl: %s", n.baseurl)
+		n.baseurl = "https://api.weather.gov/stations"
+		log.Infof("Using default baseurl: %s", n.baseurl)
 	}
 
-	url := fmt.Sprintf("%s?gage=%s&output=xml", n.baseurl, station)
+	url := fmt.Sprintf("%s/%s/observations/latest", n.baseurl, station)
 	log.Debugf("GetLevel URL: %s", url)
-
-	nwsData := NWS{}
-
-	err := getStationInfo(url, &nwsData)
-	if err != nil {
-		return 0, err
-	}
-
-	reading := nwsData.Observed.Datum[0].Primary.Text
-	if reading == "" {
-		err = fmt.Errorf("unable to find observed datum element for url: %s", url)
-		return 0, err
-	}
-	log.Debugf("Gauge Reading: %s", reading)
-
-	f, err := strconv.ParseFloat(reading, 64)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	return f, nil
-}
-
-func (n *NwsAPI) GetStationList() ([]Station, error) {
-	body := strings.NewReader(`key=akq&fcst_type=obs&percent=50&current_type=all`)
-	req, err := http.NewRequest("POST", "https://water.weather.gov/ahps/get_map_points.php", body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("Accept", "*/*")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var list []Station
-	err = json.Unmarshal([]byte(data), &list)
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-func getStationInfo(url string, data *NWS) error {
-	log.Debug(url)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return 0, fmt.Errorf("error fetching data: %v", err)
 	}
-
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	err = xml.Unmarshal(body, data)
-	if err != nil {
-		return err
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Errorf("Non-200 response: %d, Body: %s", resp.StatusCode, string(body))
+		return 0, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
 	}
 
-	return nil
+	var data struct {
+		Properties struct {
+			Temperature struct {
+				Value float64 `json:"value"`
+			} `json:"temperature"`
+		} `json:"properties"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return 0, fmt.Errorf("error decoding JSON: %v", err)
+	}
+
+	return data.Properties.Temperature.Value, nil
 }
 
-type NWS struct {
-	Observed struct {
-		Datum []struct {
-			Primary struct {
-				Text  string `xml:",chardata"`
-				Name  string `xml:"name,attr"`
-				Units string `xml:"units,attr"`
-			} `xml:"primary"`
-		} `xml:"datum"`
-	} `xml:"observed"`
+// GetStationList retrieves a list of stations from the NWS API and converts them into the common Station type.
+func (n *NwsAPI) GetStationList() ([]Station, error) {
+	url := "https://api.weather.gov/stations"
+	log.Debugf("GetStationList URL: %s", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching station list: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Errorf("Non-200 response: %d, Body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
+	}
+
+	var stationResponse struct {
+		Features []struct {
+			Properties struct {
+				ID        string  `json:"stationIdentifier"`
+				Name      string  `json:"name"`
+				Latitude  float64 `json:"latitude"`
+				Longitude float64 `json:"longitude"`
+			} `json:"properties"`
+		} `json:"features"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&stationResponse); err != nil {
+		return nil, fmt.Errorf("error decoding station list JSON: %v", err)
+	}
+
+	var stations []Station
+	for _, feature := range stationResponse.Features {
+		props := feature.Properties
+		s := Station{
+			Key: props.ID,
+			Points: []StationPoint{
+				{
+					Lid:       props.ID,
+					Latitude:  strconv.FormatFloat(props.Latitude, 'f', 6, 64),
+					Longitude: strconv.FormatFloat(props.Longitude, 'f', 6, 64),
+					Name:      props.Name,
+				},
+			},
+		}
+		stations = append(stations, s)
+	}
+
+	return stations, nil
 }

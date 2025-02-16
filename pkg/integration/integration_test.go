@@ -13,94 +13,93 @@ import (
 
 const v1 = "/api/v1"
 
+// reading is the expected payload from the /level endpoint.
 type reading struct {
-	Reading float32 `json:"reading"`
+	Reading float64 `json:"reading"`
 	Message string  `json:"message"`
 }
 
 func TestIntegrationHealthzRoute(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", v1+"/healthz", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"message\":\"healthy\"}", w.Body.String())
 }
 
 func TestIntegrationLevelRoute(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", v1+"/level", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
-	level := &reading{}
-	err := json.Unmarshal(w.Body.Bytes(), level)
+	var lvl reading
+	err := json.Unmarshal(w.Body.Bytes(), &lvl)
 	if err != nil {
 		t.Error(err)
 	}
 
 	assert.Equal(t, 200, w.Code)
-	assert.NotEmpty(t, level.Reading)
+	assert.NotZero(t, lvl.Reading)
 }
 
 func TestIntegrationLevelRouteWithStation(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", v1+"/level", nil)
-
+	// Use a valid USGS station ID; for example, "01646500"
 	q := req.URL.Query()
-	q.Add("station", "RICV2")
+	q.Add("station", "01646500")
 	req.URL.RawQuery = q.Encode()
 
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
-	level := &reading{}
-	err := json.Unmarshal(w.Body.Bytes(), level)
+	var lvl reading
+	err := json.Unmarshal(w.Body.Bytes(), &lvl)
 	if err != nil {
 		t.Error(err)
 	}
 
 	assert.Equal(t, 200, w.Code)
-	assert.NotEmpty(t, level.Reading)
+	assert.NotZero(t, lvl.Reading)
 }
 
 func TestIntegrationLevelRouteWithBadStation(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", v1+"/level", nil)
-
 	q := req.URL.Query()
 	q.Add("station", "asdf")
 	req.URL.RawQuery = q.Encode()
-	t.Log(req.URL)
 
-	router.ServeHTTP(w, req)
-	t.Log(w.Body.String())
+	r.ServeHTTP(w, req)
 
-	level := &reading{}
-	err := json.Unmarshal(w.Body.Bytes(), level)
+	var lvl reading
+	err := json.Unmarshal(w.Body.Bytes(), &lvl)
 	if err != nil {
 		t.Error(err)
 	}
 
-	assert.Equal(t, level.Message, "XML syntax error on line 95: invalid character entity &nbsp;")
-	assert.Equal(t, w.Code, 424)
+	// Expect the USGS API to return an error with status code 424 and the message below.
+	assert.Equal(t, "received non-200 response code: 400", lvl.Message)
+	assert.Equal(t, 424, w.Code)
 }
 
 func TestIntegrationStationRoute(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", v1+"/stations", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
-	stations := &[]api.Station{}
-	err := json.Unmarshal(w.Body.Bytes(), stations)
+	var stations []api.Station
+	err := json.Unmarshal(w.Body.Bytes(), &stations)
 	if err != nil {
 		t.Error(err)
 	}
@@ -110,18 +109,18 @@ func TestIntegrationStationRoute(t *testing.T) {
 }
 
 func TestIntegrationSlackRoute(t *testing.T) {
-	router := router.GetRouter()
+	r := router.GetRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", v1+"/slack", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
-	slack := &api.Slack{}
-	err := json.Unmarshal(w.Body.Bytes(), slack)
+	var slackResp api.Slack
+	err := json.Unmarshal(w.Body.Bytes(), &slackResp)
 	if err != nil {
 		t.Error(err)
 	}
 
 	assert.Equal(t, 200, w.Code)
-	assert.NotEmpty(t, slack.Text)
+	assert.NotEmpty(t, slackResp.Text)
 }

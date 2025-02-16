@@ -10,25 +10,31 @@ import (
 	"strings"
 )
 
-// GetRouter returns a level router
+// @title Level API
+// @version 1.0
+// @description API for retrieving water level information.
+// @BasePath /api/v1
 func GetRouter() *gin.Engine {
-
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.Use(gin.Recovery())
 	r.GET("/", RedirectRootToAPI(r))
 
 	v1 := r.Group("/api/v1")
-
-	v1.GET("/level", level)
-	v1.GET("/stations", stations)
-	v1.GET("/healthz", healthz)
-	v1.POST("/slack", slack)
+	{
+		v1.GET("/level", level)
+		v1.GET("/stations", stations)
+		v1.GET("/healthz", healthz)
+		v1.POST("/slack", slack)
+	}
 
 	return r
 }
 
-// RedirectRootToAPI redirects all calls from root endpoint to current API documentation endpoint
+// RedirectRootToAPI sends requests from "/" to "/api/v1/level".
+// @Summary Redirect Root
+// @Description Redirect requests from root URL to /api/v1/level endpoint
+// @Router / [get]
 func RedirectRootToAPI(r *gin.Engine) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Request.URL.Path = "/api/v1/level"
@@ -36,32 +42,29 @@ func RedirectRootToAPI(r *gin.Engine) gin.HandlerFunc {
 	}
 }
 
-// healthz is a service healthcheck
-// @Summary return healthcheck
-// @Description get health
-// @ID healthz
-// @Accept  json
-// @Produce  json
-// @Success 200
+// healthz is a simple health-check endpoint.
+// @Summary Health Check
+// @Description Returns service health status.
+// @Produce json
+// @Success 200 {object} map[string]string "healthy"
 // @Router /healthz [get]
 func healthz(c *gin.Context) {
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "healthy",
 	})
 }
 
-// slack returns a package with the level and image link
-// @Summary return a slack response
-// @Description return a slack response
-// @ID slack
-// @Accept  json
-// @Produce  json
-// @Success 200
+// slack returns a Slack-compatible payload using the NWS API.
+// @Summary Slack Response
+// @Description Returns a Slack payload with the water level and an image link.
+// @Accept json
+// @Produce json
+// @Param station query string false "Station identifier" default(RMDV2)
+// @Success 200 {object} api.Slack
 // @Failure 424 {object} httputil.HTTPError
 // @Router /slack [post]
 func slack(c *gin.Context) {
-
-	station := c.DefaultQuery("station", "RMDV2")
+	station := c.DefaultQuery("station", "KSEA")
 
 	var i api.WaterLevelAPI = &api.NwsAPI{}
 	lvl, err := i.GetLevel(station)
@@ -70,7 +73,7 @@ func slack(c *gin.Context) {
 		return
 	}
 
-	slack := api.Slack{
+	slackResp := api.Slack{
 		Text:         fmt.Sprintf("%f", lvl),
 		ResponseType: "in_channel",
 		Parse:        "full",
@@ -79,56 +82,52 @@ func slack(c *gin.Context) {
 		Attachments: []struct {
 			ImageURL string `json:"image_url"`
 		}{
-			{ImageURL: fmt.Sprintf("https://water.weather.gov/resources/hydrographs/%s_hg.png", strings.ToLower(station))},
+			{
+				ImageURL: fmt.Sprintf("https://water.weather.gov/resources/hydrographs/%s_hg.png", strings.ToLower(station)),
+			},
 		},
 	}
 
-	c.JSON(200, &slack)
+	c.JSON(http.StatusOK, &slackResp)
 }
 
-// stations gets the list of stations for a region
-// @Summary returns list of stations
-// @Description get stations
-// @ID stations
-// @Accept  json
-// @Produce  json
-// @Success 200
+// stations returns the station list using the USGS API.
+// @Summary Get Station List
+// @Description Returns a list of stations.
+// @Produce json
+// @Success 200 {array} api.Station
 // @Failure 424 {object} httputil.HTTPError
 // @Router /stations [get]
 func stations(c *gin.Context) {
-
-	var i api.WaterLevelAPI = &api.NwsAPI{}
+	var i api.WaterLevelAPI = &api.UsgsAPI{}
 	stations, err := i.GetStationList()
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	c.JSON(200, &stations)
+	c.JSON(http.StatusOK, stations)
 }
 
-// level gets the water level for a given station
-// @Summary return water level
-// @Description get level by station
-// @ID level
-// @Accept  json
-// @Produce  json
-// @Param station path string false "NWS Station to query"
-// @Success 200
+// level returns the water level for a specified station using the USGS API.
+// @Summary Get Water Level
+// @Description Returns the water level for a given station.
+// @Produce json
+// @Param station query string false "Station identifier" default(01646500)
+// @Success 200 {object} map[string]float64
 // @Failure 424 {object} httputil.HTTPError
 // @Router /level [get]
 func level(c *gin.Context) {
+	station := c.DefaultQuery("station", "01646500")
 
-	station := c.DefaultQuery("station", "RMDV2")
-
-	var i api.WaterLevelAPI = &api.NwsAPI{}
+	var i api.WaterLevelAPI = &api.UsgsAPI{}
 	lvl, err := i.GetLevel(station)
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"reading": lvl,
 	})
 }

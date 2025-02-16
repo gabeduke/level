@@ -1,36 +1,39 @@
 package api
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"github.com/apex/log"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type UsgsAPI struct {
 	baseurl string
+	// Default state code if not provided
+	stateCd string
 }
 
+// GetLevel returns the water level (gage reading) for the given station.
 func (u *UsgsAPI) GetLevel(station string) (float64, error) {
 	if u.baseurl == "" {
 		u.baseurl = "https://waterservices.usgs.gov/nwis/iv/"
-		log.Infof("Get default baseurl: %s", u.baseurl)
+		log.Infof("Using default baseurl: %s", u.baseurl)
 	}
-
 	url := fmt.Sprintf("%s?sites=%s&parameterCd=00065&format=json", u.baseurl, station)
 	log.Debugf("GetLevel URL: %s", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error fetching data: %v", err)
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, err
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
 	}
 
 	var usgsData struct {
@@ -45,12 +48,13 @@ func (u *UsgsAPI) GetLevel(station string) (float64, error) {
 		} `json:"value"`
 	}
 
-	err = json.Unmarshal(data, &usgsData)
-	if err != nil {
-		return 0, err
+	if err := json.NewDecoder(resp.Body).Decode(&usgsData); err != nil {
+		return 0, fmt.Errorf("error decoding JSON response: %v", err)
 	}
 
-	if len(usgsData.Value.TimeSeries) == 0 || len(usgsData.Value.TimeSeries[0].Values) == 0 || len(usgsData.Value.TimeSeries[0].Values[0].Value) == 0 {
+	if len(usgsData.Value.TimeSeries) == 0 ||
+		len(usgsData.Value.TimeSeries[0].Values) == 0 ||
+		len(usgsData.Value.TimeSeries[0].Values[0].Value) == 0 {
 		return 0, fmt.Errorf("no data found for station: %s", station)
 	}
 
@@ -59,32 +63,85 @@ func (u *UsgsAPI) GetLevel(station string) (float64, error) {
 
 	f, err := strconv.ParseFloat(reading, 64)
 	if err != nil {
-		log.Error(err.Error())
+		return 0, fmt.Errorf("error parsing gauge reading: %v", err)
 	}
 
 	return f, nil
 }
 
+// GetStationList retrieves a list of stations from USGS and converts them into the common Station type.
 func (u *UsgsAPI) GetStationList() ([]Station, error) {
-	url := "https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=all&siteType=ST&siteStatus=active"
+	// Use default state code if not set.
+	stateCd := u.stateCd
+	if stateCd == "" {
+		stateCd = "va"
+	}
+
+	url := fmt.Sprintf("https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd=%s&siteType=ST&siteStatus=active", stateCd)
 	log.Debugf("GetStationList URL: %s", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error fetching station list: %v", err)
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Errorf("Received non-200 response code: %d, Body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
 	}
 
-	var stations []Station
-	err = json.Unmarshal(data, &stations)
+	reader := csv.NewReader(resp.Body)
+	reader.Comma = '\t'
+	reader.Comment = '#'
+
+	records, err := reader.ReadAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading RDB data: %v", err)
+	}
+	if len(records) < 2 {
+		return nil, fmt.Errorf("no station data found")
+	}
+
+	headers := records[0]
+	var stations []Station
+	for _, record := range records[1:] {
+		if len(record) != len(headers) {
+			log.Warnf("record length mismatch: %v", record)
+			continue
+		}
+
+		agencyCode := record[getIndex(headers, "agency_cd")]
+		siteNumber := record[getIndex(headers, "site_no")]
+		stationName := record[getIndex(headers, "station_nm")]
+		siteType := record[getIndex(headers, "site_tp_cd")]
+		decLat := record[getIndex(headers, "dec_lat_va")]
+		decLong := record[getIndex(headers, "dec_long_va")]
+
+		s := Station{
+			Key: agencyCode + "-" + siteNumber,
+			Points: []StationPoint{
+				{
+					Lid:       siteNumber,
+					Latitude:  decLat,
+					Longitude: decLong,
+					GaugeType: siteType,
+					Name:      stationName,
+				},
+			},
+		}
+		stations = append(stations, s)
 	}
 
 	return stations, nil
+}
+
+func getIndex(headers []string, header string) int {
+	for i, h := range headers {
+		if strings.TrimSpace(h) == header {
+			return i
+		}
+	}
+	return -1
 }
