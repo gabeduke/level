@@ -2,8 +2,8 @@ package router
 
 import (
 	"fmt"
+	"github.com/gabeduke/level/pkg/api"
 	"github.com/gabeduke/level/pkg/httputil"
-	"github.com/gabeduke/level/pkg/nws"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -63,14 +63,14 @@ func slack(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
 
-	i := nws.NwsStationAPI{}
+	var i api.WaterLevelAPI = &api.NwsAPI{}
 	lvl, err := i.GetLevel(station)
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
 	}
 
-	slack := nws.Slack{
+	slack := api.Slack{
 		Text:         fmt.Sprintf("%f", lvl),
 		ResponseType: "in_channel",
 		Parse:        "full",
@@ -97,10 +97,8 @@ func slack(c *gin.Context) {
 // @Router /stations [get]
 func stations(c *gin.Context) {
 
-	stations := nws.StationsList{}
-
-	i := nws.NwsStationAPI{}
-	err := i.GetStationList(&stations)
+	var i api.WaterLevelAPI = &api.NwsAPI{}
+	stations, err := i.GetStationList()
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)
 		return
@@ -123,7 +121,7 @@ func level(c *gin.Context) {
 
 	station := c.DefaultQuery("station", "RMDV2")
 
-	i := nws.NwsStationAPI{}
+	var i api.WaterLevelAPI = &api.NwsAPI{}
 	lvl, err := i.GetLevel(station)
 	if err != nil {
 		httputil.NewError(c, http.StatusFailedDependency, err)

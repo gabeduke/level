@@ -2,7 +2,7 @@ package router
 
 import (
 	"encoding/json"
-	"github.com/gabeduke/level/pkg/nws"
+	"github.com/gabeduke/level/pkg/api"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -116,12 +116,12 @@ func TestStationRoute(t *testing.T) {
 	req, _ := http.NewRequest("GET", v1+"/stations", nil)
 	router.ServeHTTP(w, req)
 
-	stations := &nws.StationsList{}
+	stations := &[]api.Station{}
 	err := json.Unmarshal(w.Body.Bytes(), stations)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	assert.Equal(t, 200, w.Code)
-	assert.NotEmpty(t, stations.Points)
+	assert.NotEmpty(t, stations)
 }
