@@ -15,6 +15,7 @@ chmod 600 $HOME/.netrc
 
 git config --global user.name 'autobot'
 git config --global user.email 'autobot@leetserve.com'
+git config --global --add safe.directory /github/workspace
 
 if [ -z "$TAG" ]
 then
