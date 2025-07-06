@@ -7,9 +7,7 @@ jobs:
   tag-master:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Mark repo as safe for Git
-      run: git config --global --add safe.directory /github/workspace
+    - uses: actions/checkout@v4
     - name: tag
       uses: ./.github/actions/git-tags
       env:
@@ -25,19 +23,16 @@ jobs:
       with:
         args: This is an auto-commit
     - name: generate-tagged-changelog
-      uses: docker://ferrarimarco/github-changelog-generator:1.15.0.pre.beta
+      uses: docker://ferrarimarco/github-changelog-generator:1.16.2
       env:
         CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
         SRC_PATH: /github/workspace
       with:
-        entrypoint: /bin/sh
-        args: -c "git config --global --add safe.directory /github/workspace && github_changelog_generator -u gabeduke -p level --release-branch develop"
-
+        args: -u gabeduke -p level --release-branch master
     - name: push-changelog
       uses: docker://whizark/chandler
       env:
         CHANDLER_GITHUB_API_TOKEN: ${{ secrets.CHANDLER_GITHUB_API_TOKEN }}
         CHANDLER_WORKDIR: /github/workspace
       with:
-        entrypoint: /bin/sh
-        args: -c "git config --global --add safe.directory /github/workspace && chandler push"
+        args: push
