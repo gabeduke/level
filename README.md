@@ -1,8 +1,6 @@
 ![](https://github.com/gabeduke/level/workflows/Test/badge.svg)
 ![](https://github.com/gabeduke/level/workflows/Lint/badge.svg)
 ![](https://github.com/gabeduke/level/workflows/Fmt/badge.svg)
-![](https://github.com/gabeduke/level/workflows/Tag/badge.svg)
-![](https://github.com/gabeduke/level/workflows/Release/badge.svg)
 [![codecov](https://codecov.io/gh/gabeduke/level/branch/master/graph/badge.svg)](https://codecov.io/gh/gabeduke/level)
 
 # Level
@@ -16,11 +14,12 @@ Level is an API to query readings from the National Water Service. Readings can 
 More detailed docs can be found [HERE](https://gabeduke.github.io/level/)
 
 <!-- markdown-swagger -->
- Endpoint    | Method | Auth? | Description         
- ----------- | ------ | ----- | --------------------
- `/healthz`  | GET    | No    | get health          
- `/level`    | GET    | No    | get level by station
- `/stations` | GET    | No    | get stations        
+ Endpoint    | Method | Auth? | Description            
+ ----------- | ------ | ----- | -----------------------
+ `/healthz`  | GET    | No    | get health             
+ `/level`    | GET    | No    | get level by station   
+ `/slack`    | POST   | No    | return a slack response
+ `/stations` | GET    | No    | get stations           
 <!-- /markdown-swagger -->
 
 ## Run
@@ -37,4 +36,11 @@ Try out the API for free on Google Cloud Run:
 
 `make dev` will run the project in Go dev mode
 
+### Bootstrap (terraform)
 
+```bash
+git submodule update
+make init
+make import
+make apply
+```

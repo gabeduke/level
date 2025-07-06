@@ -1,6 +1,4 @@
-FROM golang:1.12
-
-RUN curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
+FROM golang:1.24
 
 RUN apt-get update && \
     apt-get install -y jq

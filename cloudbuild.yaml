@@ -1,0 +1,21 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME', '.']
+  # Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME']
+  # Deploy image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'level'
+      - '--image'
+      - 'gcr.io/leetcloud-173303/github.com/gabeduke/level:snapshot-$BRANCH_NAME'
+      - '--region'
+      - 'us-east1'
+      - '--platform'
+      - 'managed'
+images:
+  - gcr.io/leetcloud-173303/github.com/gabeduke/level

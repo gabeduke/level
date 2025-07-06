@@ -7,9 +7,13 @@ ports:
 
 # List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/44_config_start_tasks/
 tasks:
-  - init: echo 'init' # runs during prebuild
+  - name: Init
+    init: echo 'init' # runs during prebuild
     command: go mod download
-  - command: go run main.go
-    name: Serve
-  - openMode: split-bottom
-    command: until curl -w '\n' --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-connrefused --retry-max-time 40 localhost:8080/api/v1/level ; do echo "retrying.." && sleep 5 ; done
+  - name: Serve
+    command: go run main.go
+  - openMode: tab-after
+    name: e2e
+    command: |
+      gp await-port 8080
+      curl -w '\n' localhost:8080/api/v1/level

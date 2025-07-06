@@ -4,3 +4,7 @@ CHANGELOG.md
 dist
 test-results.txt
 coverage.txt
+
+.terraform/
+level.tfstate
+level.tfstate.backup
