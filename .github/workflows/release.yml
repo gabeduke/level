@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: generate-release-changelog
-      uses: docker://ferrarimarco/github-changelog-generator:1.16.4
+      uses: docker://ferrarimarco/github-changelog-generator:1.16.2
       env:
         CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
         SRC_PATH: /github/workspace
