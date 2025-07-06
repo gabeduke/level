@@ -30,11 +30,14 @@ jobs:
         CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
         SRC_PATH: /github/workspace
       with:
-        args: -u gabeduke -p level --release-branch develop
+        entrypoint: /bin/sh
+        args: -c "git config --global --add safe.directory /github/workspace && github_changelog_generator -u gabeduke -p level --release-branch develop"
+
     - name: push-changelog
       uses: docker://whizark/chandler
       env:
         CHANDLER_GITHUB_API_TOKEN: ${{ secrets.CHANDLER_GITHUB_API_TOKEN }}
         CHANDLER_WORKDIR: /github/workspace
       with:
-        args: push
+        entrypoint: /bin/sh
+        args: -c "git config --global --add safe.directory /github/workspace && chandler push"
