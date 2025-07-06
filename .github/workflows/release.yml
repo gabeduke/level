@@ -1,22 +1,26 @@
 on:
-  create:
-    tags: "*"
-name: Release
+  push:
+    tags:
+      - '*'
+
 jobs:
-  created-filter:
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: generate-release-changelog
-      uses: docker://githubchangeloggenerator/github-changelog-generator:1.16.2
-      env:
-        CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
-        SRC_PATH: /github/workspace
-      with:
-        args: -u gabeduke -p level --release-branch master
-    - name: goreleaser
-      uses: docker://goreleaser/goreleaser
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: release --release-notes=/github/workspace/CHANGELOG.md
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: mikepenz/action-gh-release@v0.2.0-a03 #softprops/action-gh-release
+        with:
+          body: ${{steps.github_release.outputs.changelog}}
+      - name: goreleaser
+        uses: docker://goreleaser/goreleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: release --release-notes=/github/workspace/CHANGELOG.md
