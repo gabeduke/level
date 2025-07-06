@@ -23,7 +23,7 @@ jobs:
       with:
         args: This is an auto-commit
     - name: generate-tagged-changelog
-      uses: docker://ferrarimarco/github-changelog-generator:1.16.2
+      uses: docker://githubchangeloggenerator/github-changelog-generator:1.16.2
       env:
         CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
         SRC_PATH: /github/workspace
