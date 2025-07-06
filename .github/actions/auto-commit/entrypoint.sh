@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-BRANCH=develop
+BRANCH=master
 
 cat <<- EOF > $HOME/.netrc
         machine github.com
